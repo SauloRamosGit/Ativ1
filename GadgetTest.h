@@ -3,73 +3,57 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QMetaEnum>
 
-struct P2D {
-    Q_GADGET
-    Q_PROPERTY(float m_x READ getm_x)
-    Q_PROPERTY(float m_y READ getm_y)
-public:
-    float m_x;
-    float m_y;
+namespace gadget{
 
-    float getm_x () const { return m_x ; }
-    float getm_y () const { return m_y ; }
-};Q_DECLARE_METATYPE(P2D)
+Q_NAMESPACE
 
 enum class PlayerType {
     NO_TYPE = 0,
-            TANK,
-            CHARACTER,
-            SHIP
+    TANK,
+    CHARACTER,
+    SHIP
 };
-Q_DECLARE_METATYPE(PlayerType)
+Q_ENUM_NS(PlayerType)
+
+
+
+struct P2D {
+    Q_GADGET
+    Q_PROPERTY(float m_x MEMBER m_x)
+    Q_PROPERTY(float m_y MEMBER m_y)
+public:
+    float m_x;
+    float m_y;
+};
+
 
 struct Player {
     Q_GADGET
 
-    Q_PROPERTY(PlayerType m_playerType MEMBER m_playerType )
-    Q_PROPERTY(float m_speed READ getm_speed)
-    Q_PROPERTY(quint16 m_ammunition READ getm_ammunition)
-    Q_PROPERTY(bool m_active READ getm_active)
-    Q_PROPERTY(quint8 m_numberOfCoordinates READ getm_numberOfCoordinates)
-    Q_PROPERTY(P2D *m_coordinates READ getm_coordinates)
+    Q_PROPERTY(gadget::PlayerType m_playerType MEMBER m_playerType )
+    Q_PROPERTY(float m_speed MEMBER m_speed)
+    Q_PROPERTY(quint16 m_ammunition MEMBER m_ammunition)
+    Q_PROPERTY(bool m_active MEMBER m_active)
+    Q_PROPERTY(quint8 m_numberOfCoordinates MEMBER m_numberOfCoordinates)
+    Q_PROPERTY(P2D *m_coordinates MEMBER m_coordinates)
 public:
     PlayerType m_playerType;
     float m_speed;
     quint16 m_ammunition;
     bool m_active;
-    quint8 m_numberOfCoordinates = 10;
+    quint8 m_numberOfCoordinates = 3;
     P2D *m_coordinates;
 
-    float getm_speed () const { return m_speed; }
-    quint16 getm_ammunition () const { return m_ammunition ; }
-    bool getm_active () const { return m_active ; }
-    quint8 getm_numberOfCoordinates () const { return m_numberOfCoordinates ; }
-    P2D * getm_coordinates () const { return m_coordinates ; }
-    PlayerType getm_playerType() const { return m_playerType; }
-
 };
 
-Q_DECLARE_METATYPE(Player)
-
-//Q_ENUM(PlayerType)
-//Q_DECLARE_METATYPE(PlayerType)
-class GadgetTest : public QObject
-{
-
-    Q_OBJECT
-
-public:
-    GadgetTest();
-
-
-    //  Q_ENUM(PlayerType)
-
-signals:
-
-
-
-
-
 };
+Q_DECLARE_METATYPE(gadget::P2D)
+Q_DECLARE_METATYPE(gadget::Player)
+
+
+
+
+
 #endif // GADGETTEST_H

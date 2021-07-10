@@ -27,6 +27,9 @@ public:
     ~MainWindow();
 
     void createForm();
+public slots:
+
+    void on_spinBox_valueChanged(int arg1);
 private slots:
 
 
@@ -53,6 +56,7 @@ private:
 
     QFrame *frame;
     QCheckBox *checkBox;
+
 
 };
 

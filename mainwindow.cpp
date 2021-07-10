@@ -5,12 +5,18 @@
 #include "./ui_mainwindow.h"
 #include "GadgetTest.h"
 
+using namespace gadget;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    qRegisterMetaType<P2D>();
+    qRegisterMetaType<Player>();
+    qRegisterMetaType<PlayerType>();
+
     createForm();
 
 }
@@ -22,27 +28,23 @@ MainWindow::~MainWindow()
 
 void MainWindow::createForm(){
 
-    int idP2D = qRegisterMetaType<P2D>();
-    qRegisterMetaType<Player>();
-    int idPlayerType = qRegisterMetaType<PlayerType>();
-
-    wdg = new QWidget;
+    wdg = new QWidget(this);
 
     scrollArea = new QScrollArea;
+    scrollArea->setWidgetResizable(true);
 
     content_widget = new QWidget;
+
+    Player myPlayer;
 
     form = new QFormLayout(content_widget);
     form->setVerticalSpacing(40);
     form->setLabelAlignment(Qt::AlignRight);
 
-    Player myPlayer;
-
     QMetaObject metaobject = myPlayer.staticMetaObject;
-
     int count = metaobject.propertyCount();
 
-    for (int i=0; i<count; ++i) {
+    for (int i=0; i < count; ++i) {
 
         QMetaProperty metaproperty = metaobject.property(i);
         const char *name = metaproperty.name();
@@ -58,46 +60,50 @@ void MainWindow::createForm(){
             form->addRow(fieldName, spinBox);
         } else if (type == "uchar") {
             spinBox = new QSpinBox;
-            spinBox->setValue(myPlayer.getm_numberOfCoordinates());
+
             fieldName = new QLabel(name);
             form->addRow(fieldName, spinBox);
+
             coordFormFrame = new QFormLayout();
             coordFormFrame->setSpacing(10);
 
-            // Deve ser atraves de uma PROPERTY READ ao inves do get???
-            // Deve ser em tempo-real quando muda a propriedade anterior??
+            QVariant var = metaproperty.readOnGadget(&myPlayer);
+            spinBox->setValue(var.toInt());
+
             for (int i=0; i < spinBox->value() ; i++ ) {
                 x = new QSpinBox;
                 y = new QSpinBox;
+
                 coordinatesForm = new QFormLayout;
                 coordinatesForm->setVerticalSpacing(10);
                 coordinatesForm->addRow("  x  ", x);
                 coordinatesForm->addRow("  y  ", y);
                 QString coordStr = "coordinate";
                 coordStr.append(QString::number(i+1));
+
                 coordFormFrame->addRow(coordStr, coordinatesForm);
             }
 
-           form->addRow("coordinates", coordFormFrame);
+            QObject::connect(spinBox, &QSpinBox::valueChanged, this, &MainWindow::on_spinBox_valueChanged);
+
+            form->addRow("coordinates", coordFormFrame);
 
         } else if (type == "bool") {
             checkBox = new QCheckBox;
             fieldName = new QLabel(name);
             form->addRow(fieldName, checkBox);
 
-            // Não consegui dar o retrieve no ENUM
-        } else if (metaproperty.typeId() == idPlayerType){
-
+        } else if (metaproperty.isEnumType()){
 
             comboBox = new QComboBox;
-            comboBox->addItem("NO_TYPE");
-            comboBox->addItem("TANK");
-            comboBox->addItem("CHARACTER");
-            comboBox->addItem("SHIP");
+            QMetaEnum metaEnum = metaproperty.enumerator();
+
+            for (int i= 0;i < sizeof(metaEnum.keyCount()) ; i++) {
+                comboBox->addItem(metaEnum.key(i));
+
+            }
             fieldName = new QLabel(name);
             form->addRow(fieldName, comboBox) ;
-
-        } else if (metaproperty.typeId() == idP2D){
 
         }
 
@@ -109,3 +115,27 @@ void MainWindow::createForm(){
     setCentralWidget(wdg);
 
 }
+
+void MainWindow::on_spinBox_valueChanged(int arg1){
+
+    if (coordFormFrame->rowCount() > arg1){
+        coordFormFrame->removeRow(coordFormFrame->rowCount()-1);
+    }
+
+    if ( arg1 > coordFormFrame->rowCount()){
+        x = new QSpinBox;
+        y = new QSpinBox;
+
+        coordinatesForm = new QFormLayout;
+        coordinatesForm->setVerticalSpacing(10);
+        coordinatesForm->addRow("  x  ", x);
+        coordinatesForm->addRow("  y  ", y);
+        QString coordStr = "coordinate";
+        coordStr.append(QString::number(coordFormFrame->rowCount()+1));
+
+        coordFormFrame->addRow(coordStr, coordinatesForm);
+    }
+
+}
+
+#include "moc_GadgetTest.cpp"
