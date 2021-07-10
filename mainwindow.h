@@ -28,10 +28,11 @@ public:
 
     void createForm();
 public slots:
-
-    void on_spinBox_valueChanged(int arg1);
 private slots:
 
+
+
+    void on_spinBoxValueChanged (int arg1);
 
 private:
     Ui::MainWindow *ui;

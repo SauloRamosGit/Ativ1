@@ -32,6 +32,7 @@ void MainWindow::createForm(){
 
     scrollArea = new QScrollArea;
     scrollArea->setWidgetResizable(true);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     content_widget = new QWidget;
 
@@ -67,24 +68,11 @@ void MainWindow::createForm(){
             coordFormFrame = new QFormLayout();
             coordFormFrame->setSpacing(10);
 
+            QObject::connect(spinBox, &QSpinBox::valueChanged, this, &MainWindow::on_spinBoxValueChanged);
+
             QVariant var = metaproperty.readOnGadget(&myPlayer);
             spinBox->setValue(var.toInt());
-
-            for (int i=0; i < spinBox->value() ; i++ ) {
-                x = new QSpinBox;
-                y = new QSpinBox;
-
-                coordinatesForm = new QFormLayout;
-                coordinatesForm->setVerticalSpacing(10);
-                coordinatesForm->addRow("  x  ", x);
-                coordinatesForm->addRow("  y  ", y);
-                QString coordStr = "coordinate";
-                coordStr.append(QString::number(i+1));
-
-                coordFormFrame->addRow(coordStr, coordinatesForm);
-            }
-
-            QObject::connect(spinBox, &QSpinBox::valueChanged, this, &MainWindow::on_spinBox_valueChanged);
+            spinBox->setMinimum(1);
 
             form->addRow("coordinates", coordFormFrame);
 
@@ -116,13 +104,9 @@ void MainWindow::createForm(){
 
 }
 
-void MainWindow::on_spinBox_valueChanged(int arg1){
+void MainWindow::on_spinBoxValueChanged(int arg1){
 
-    if (coordFormFrame->rowCount() > arg1){
-        coordFormFrame->removeRow(coordFormFrame->rowCount()-1);
-    }
-
-    if ( arg1 > coordFormFrame->rowCount()){
+    for (int i = coordFormFrame->rowCount(); i <= arg1 ; i++ ) {
         x = new QSpinBox;
         y = new QSpinBox;
 
@@ -131,9 +115,13 @@ void MainWindow::on_spinBox_valueChanged(int arg1){
         coordinatesForm->addRow("  x  ", x);
         coordinatesForm->addRow("  y  ", y);
         QString coordStr = "coordinate";
-        coordStr.append(QString::number(coordFormFrame->rowCount()+1));
+        coordStr.append(QString::number(i+1));
 
         coordFormFrame->addRow(coordStr, coordinatesForm);
+    }
+
+    while (coordFormFrame->rowCount() != arg1){
+        coordFormFrame->removeRow(coordFormFrame->rowCount()-1);
     }
 
 }
